@@ -1,4 +1,12 @@
-import { Attack, MockDiceService, Rule_AP, Rule_Reliable, Rule_Rending } from "../services/DiceService";
+import {
+  Attack,
+  Hit,
+  MockDiceService,
+  Rule_AP,
+  Rule_Blast,
+  Rule_Reliable,
+  Rule_Rending,
+} from "../services/DiceService";
 import { describe, expect, test } from "@jest/globals";
 
 const getMock = (result) => new MockDiceService(result);
@@ -24,7 +32,7 @@ test("AP Modifies Defense", () => {
 test("Rending roll of 6", () => {
   const rending = new Rule_Rending();
 
-  rending.onSuccessfulAttack(6);
+  rending.onSuccessfulAttack(6, []);
 
   const result = rending.modifyDefenseRoll(6);
 
@@ -34,7 +42,7 @@ test("Rending roll of 6", () => {
 test("Rending roll of not 6", () => {
   const rending = new Rule_Rending();
 
-  rending.onSuccessfulAttack(4);
+  rending.onSuccessfulAttack(4, []);
 
   const result = rending.modifyDefenseRoll(6);
 
@@ -51,6 +59,19 @@ test("Reliable", () => {
   const result = attack.roll();
 
   expect(result.length).toEqual(1);
+});
+
+//#endregion
+
+//#region Blast
+
+test("Blast(3)", () => {
+  const blast = new Rule_Blast(3);
+
+  const hits = [new Hit([])];
+  blast.onSuccessfulAttack(4, hits);
+
+  expect(hits.length).toEqual(3);
 });
 
 //#endregion
