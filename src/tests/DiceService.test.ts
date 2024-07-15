@@ -1,4 +1,4 @@
-import { Attack, MockDiceService, Rule_AP, Rule_Rending } from "../services/DiceService";
+import { Attack, MockDiceService, Rule_AP, Rule_Reliable, Rule_Rending } from "../services/DiceService";
 import { describe, expect, test } from "@jest/globals";
 
 const getMock = (result) => new MockDiceService(result);
@@ -42,3 +42,15 @@ test("Rending roll of not 6", () => {
 });
 
 // #endregion
+
+//#region Reliable
+
+test("Reliable", () => {
+  const attack = new Attack(getMock(2), 4, [new Rule_Reliable()]);
+
+  const result = attack.roll();
+
+  expect(result.length).toEqual(1);
+});
+
+//#endregion

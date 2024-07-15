@@ -19,10 +19,14 @@ export class Attack {
   constructor(public diceService: IDiceService, public target: number, public rules: IRule[]) {}
 
   public roll(): Hit[] {
+    for (const rule of this.rules) {
+      rule.setTarget?.call(null, this);
+    }
+
     const result = this.diceService.rollD6();
     if (result >= this.target) {
       for (const rule of this.rules) {
-        rule.onSuccessfulAttack(result);
+        rule.onSuccessfulAttack?.call(null, result);
       }
 
       return [new Hit(this.rules)];
@@ -36,9 +40,16 @@ export class Hit {
 }
 
 export interface IRule {
+  setTarget?: (attack: Attack) => void;
   onSuccessfulAttack?: (roll: number) => void;
   modifyDefenseRoll?: (roll: number) => number;
   // ...
+}
+
+export class Rule_Reliable implements IRule {
+  setTarget(attack: Attack) {
+    attack.target = 2;
+  }
 }
 
 export class Rule_Rending implements IRule {
@@ -62,3 +73,9 @@ export class Rule_AP implements IRule {
     return roll - this.value;
   }
 }
+
+const ruleMap: { [key: string]: any } = {
+  AP: Rule_AP,
+  Reliable: Rule_Reliable,
+  Rending: Rule_Rending,
+};
