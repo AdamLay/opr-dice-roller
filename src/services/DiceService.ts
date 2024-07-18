@@ -29,7 +29,6 @@ export class Attack {
 
     const result = this.diceService.rollD6();
     if (result >= this.target || result === 6) {
-      console.log("Attack is successful");
       const hits = [new Hit([])];
       for (const rule of this.rules) {
         rule.onSuccessfulAttack?.call(rule, result, hits);
@@ -40,11 +39,11 @@ export class Attack {
         hit.rules = this.rules;
       }
 
-      console.log("Hits", hits);
+      console.log("success", hits);
       console.groupEnd();
       return hits;
     } else {
-      console.log("Attackhas failed");
+      console.log("fail");
       console.groupEnd();
       return [];
     }
