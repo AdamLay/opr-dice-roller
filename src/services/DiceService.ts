@@ -67,15 +67,15 @@ export class Defense {
       result = rule.modifyDefenseRoll?.call(rule, result) ?? result;
     }
 
-    console.log("Defense result", result);
+    console.log("after modifiers", result);
 
     if (result >= this.target || roll === 6) {
-      console.log("Defense is successful");
+      console.log("success");
 
       console.groupEnd();
       return [];
     } else {
-      console.log("Defense has failed");
+      console.log("failed");
       const wounds = [new Wound()];
       for (const rule of hit.rules) {
         rule.onFailedDefense?.call(rule, result, wounds);
