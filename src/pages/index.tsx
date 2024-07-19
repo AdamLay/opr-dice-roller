@@ -66,7 +66,7 @@ export default function Home() {
       if (attackOptions.blast > 0) attackRules.push(new Rule_Blast(attackOptions.blast));
       if (attackOptions.rending) attackRules.push(new Rule_Rending());
       if (attackOptions.reliable) attackRules.push(new Rule_Reliable());
-      attackRules.push(new Rule_Rending());
+      
       const attack = new Attack(new DiceService(), quality, attackRules);
       hits.push(...attack.roll());
       attackResults.push(attack);
