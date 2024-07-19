@@ -158,9 +158,21 @@ export class Rule_AP implements IRule {
   }
 }
 
+export class Rule_Flux implements IRule {
+  public name = "Flux";
+  constructor() {}
+  onSuccessfulAttack(roll: number, hits: Hit[]) {
+    if (roll === 6) {
+      console.log("Apply additional Flux hits");
+      hits.push(new Hit());
+    }
+  }
+}
+
 const ruleMap: { [key: string]: any } = {
   AP: Rule_AP,
   Blast: Rule_Blast,
   Reliable: Rule_Reliable,
   Rending: Rule_Rending,
+  Flux: Rule_Flux,
 };

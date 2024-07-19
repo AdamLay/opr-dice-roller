@@ -21,6 +21,7 @@ import {
   IRule,
   Rule_AP,
   Rule_Blast,
+  Rule_Flux,
   Rule_Reliable,
   Rule_Rending,
   Wound,
@@ -38,6 +39,7 @@ export default function Home() {
     blast: 0,
     rending: false,
     reliable: false,
+    flux: false,
   });
 
   const displayRules = (x: { rules: IRule[] }) => x.rules.map((x) => x.name).join(", ");
@@ -66,6 +68,7 @@ export default function Home() {
       if (attackOptions.blast > 0) attackRules.push(new Rule_Blast(attackOptions.blast));
       if (attackOptions.rending) attackRules.push(new Rule_Rending());
       if (attackOptions.reliable) attackRules.push(new Rule_Reliable());
+      if (attackOptions.flux) attackRules.push(new Rule_Flux());
 
       const attack = new Attack(new DiceService(), quality, attackRules);
       hits.push(...attack.roll());
@@ -101,7 +104,10 @@ export default function Home() {
     </FormControl>
   );
 
-  const attackResultsByRules = groupBy(result.attacks.filter(x => x.success), (x) => displayRules(x));
+  const attackResultsByRules = groupBy(
+    result.attacks.filter((x) => x.success),
+    (x) => displayRules(x)
+  );
 
   return (
     <Container sx={{ pt: 2 }}>
@@ -168,10 +174,19 @@ export default function Home() {
               control={
                 <Checkbox
                   checked={attackOptions.reliable}
-                  onChange={() => setAttackOptions((x) => ({ ...x, reliable: !x.rending }))}
+                  onChange={() => setAttackOptions((x) => ({ ...x, reliable: !x.reliable }))}
                 />
               }
               label="Reliable"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={attackOptions.flux}
+                  onChange={() => setAttackOptions((x) => ({ ...x, flux: !x.flux }))}
+                />
+              }
+              label="Flux"
             />
           </Stack>
         </Grid>
@@ -198,7 +213,8 @@ export default function Home() {
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item sm={6}>
           <Typography variant="h1">
-            {result.hits.length} hits
+            {result.hits.length} hits ({result.attacks.filter((x) => x.success).length} successful
+            attacks)
             {Object.keys(attackResultsByRules).map((key) => (
               <Typography>
                 {attackResultsByRules[key].length}x {key || "Plain hits"}
