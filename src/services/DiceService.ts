@@ -19,6 +19,8 @@ export class MockDiceService implements IDiceService {
 }
 
 export class Attack {
+  public result: number;
+  public success: boolean;
   constructor(public diceService: IDiceService, public target: number, public rules: IRule[]) {}
 
   public roll(): Hit[] {
@@ -27,11 +29,11 @@ export class Attack {
       rule.setTarget?.call(rule, this);
     }
 
-    const result = this.diceService.rollD6();
-    if (result >= this.target || result === 6) {
+    this.result = this.diceService.rollD6();
+    if (this.result >= this.target || this.result === 6) {
       const hits = [new Hit([])];
       for (const rule of this.rules) {
-        rule.onSuccessfulAttack?.call(rule, result, hits);
+        rule.onSuccessfulAttack?.call(rule, this.result, hits);
       }
 
       // After everything is applied, assign the rules to this hits?
@@ -39,6 +41,7 @@ export class Attack {
         hit.rules = this.rules;
       }
 
+      this.success = true;
       console.log("success", hits);
       console.groupEnd();
       return hits;
@@ -55,30 +58,36 @@ export class Hit {
 }
 
 export class Defense {
+  public rollValue: number;
+  public result: number;
+  public success: boolean;
+  public hit: Hit;
+
   constructor(public diceService: IDiceService, public target: number, public rules: IRule[]) {}
 
   public roll(hit: Hit): Wound[] {
+    this.hit = hit;
     console.group("Defend");
 
-    const roll = this.diceService.rollD6();
-    let result = roll;
+    this.rollValue = this.diceService.rollD6();
+    this.result = this.rollValue;
 
     for (const rule of hit.rules) {
-      result = rule.modifyDefenseRoll?.call(rule, result) ?? result;
+      this.result = rule.modifyDefenseRoll?.call(rule, this.result) ?? this.result;
     }
 
-    console.log("after modifiers", result);
+    console.log("after modifiers", this.result);
 
-    if (result >= this.target || roll === 6) {
+    if (this.result >= this.target || this.rollValue === 6) {
       console.log("success");
-
+      this.success = true;
       console.groupEnd();
       return [];
     } else {
       console.log("failed");
       const wounds = [new Wound()];
       for (const rule of hit.rules) {
-        rule.onFailedDefense?.call(rule, result, wounds);
+        rule.onFailedDefense?.call(rule, this.result, wounds);
       }
 
       console.groupEnd();
@@ -90,6 +99,7 @@ export class Defense {
 export class Wound {}
 
 export interface IRule {
+  name: string;
   setTarget?: (attack: Attack) => void;
   onSuccessfulAttack?: (roll: number, hits: Hit[]) => void;
   modifyDefenseRoll?: (roll: number) => number;
@@ -98,6 +108,7 @@ export interface IRule {
 }
 
 export class Rule_Reliable implements IRule {
+  public name = "Reliable";
   setTarget(attack: Attack) {
     console.log("Reliable sets target to 2+");
     attack.target = 2;
@@ -105,6 +116,9 @@ export class Rule_Reliable implements IRule {
 }
 
 export class Rule_Blast implements IRule {
+  public get name() {
+    return `Blast(${this.value})`;
+  }
   constructor(public value: number) {}
   onSuccessfulAttack(roll: number, hits: Hit[]) {
     console.log("Apply additional Blast hits");
@@ -115,6 +129,10 @@ export class Rule_Blast implements IRule {
 }
 
 export class Rule_Rending implements IRule {
+  public get name() {
+    return `Rending${this.AP ? " AP(4)" : ""}`;
+  }
+
   public AP: Rule_AP = null;
 
   onSuccessfulAttack(roll: number, _) {
@@ -130,6 +148,9 @@ export class Rule_Rending implements IRule {
 }
 
 export class Rule_AP implements IRule {
+  public get name() {
+    return `AP(${this.value})`;
+  }
   constructor(public value: number) {}
 
   modifyDefenseRoll(roll: number): number {
