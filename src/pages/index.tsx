@@ -66,7 +66,7 @@ export default function Home() {
       if (attackOptions.blast > 0) attackRules.push(new Rule_Blast(attackOptions.blast));
       if (attackOptions.rending) attackRules.push(new Rule_Rending());
       if (attackOptions.reliable) attackRules.push(new Rule_Reliable());
-      
+
       const attack = new Attack(new DiceService(), quality, attackRules);
       hits.push(...attack.roll());
       attackResults.push(attack);
@@ -101,7 +101,7 @@ export default function Home() {
     </FormControl>
   );
 
-  const attackResultsByRules = groupBy(result.attacks, (x) => displayRules(x));
+  const attackResultsByRules = groupBy(result.attacks.filter(x => x.success), (x) => displayRules(x));
 
   return (
     <Container sx={{ pt: 2 }}>
@@ -198,11 +198,12 @@ export default function Home() {
       <Grid container spacing={2} sx={{ mt: 2 }}>
         <Grid item sm={6}>
           <Typography variant="h1">
-            {result.hits.length} hits (
-            {Object.keys(attackResultsByRules)
-              .map((key) => `${attackResultsByRules[key].length}x ${key}`)
-              .join("; ")}
-            )
+            {result.hits.length} hits
+            {Object.keys(attackResultsByRules).map((key) => (
+              <Typography>
+                {attackResultsByRules[key].length}x {key || "Plain hits"}
+              </Typography>
+            ))}
           </Typography>
           <Divider sx={{ my: 2 }} />
           {orderBy(result.attacks, "result").map((x) => (
